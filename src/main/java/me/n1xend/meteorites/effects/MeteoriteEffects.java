@@ -65,50 +65,53 @@ public class MeteoriteEffects {
     }
 
     // 🌪 ударна хвиля при падінні
-    public void spawnShockwave(Location center) {
-        ConfigurationSection sec = config.getShockwaveSettings();
-        if (sec == null || !sec.getBoolean("enabled", true)) return;
+public void spawnShockwave(Location center) {
+    ConfigurationSection sec = config.getShockwaveSettings();
+    if (sec == null || !sec.getBoolean("enabled", true)) return;
 
-        World w = center.getWorld();
-        if (w == null) return;
+    World w = center.getWorld();
+    if (w == null) return;
 
-        double radius = sec.getDouble("radius", 12.0);
-        double knockback = sec.getDouble("knockback-strength", 1.5);
-        double damage = sec.getDouble("damage", 4.0);
-        boolean slow = sec.getBoolean("apply-slow", true);
-        int slowDuration = sec.getInt("slow-duration", 60);
-        int slowAmplifier = sec.getInt("slow-amplifier", 0);
+    double radius = sec.getDouble("radius", 12.0);
+    double knockback = sec.getDouble("knockback-strength", 1.5);
+    double damage = sec.getDouble("damage", 4.0);
+    boolean slow = sec.getBoolean("apply-slow", true);
+    int slowDuration = sec.getInt("slow-duration", 60);
+    int slowAmplifier = sec.getInt("slow-amplifier", 0);
 
-        // ➜ EXPLOSION_HUGE заменили на доступный в новых версиях Bukkit
-        w.spawnParticle(Particle.EXPLOSION_LARGE, center, 1);
-        w.spawnParticle(Particle.CLOUD, center, 60, radius / 2, 1, radius / 2, 0.02);
-        w.playSound(center, Sound.ENTITY_GENERIC_EXPLODE, 2f, 0.6f);
+    // ✔ Универсальный эффект (работает на всех версиях)
+    w.spawnParticle(Particle.EXPLOSION_NORMAL, center, 1);
 
-        for (Entity e : w.getNearbyEntities(center, radius, radius, radius)) {
-            if (!(e instanceof LivingEntity living)) continue;
-            if (e instanceof ArmorStand) continue;
+    w.spawnParticle(Particle.CLOUD, center, 60,
+            radius / 2, 1, radius / 2, 0.02);
 
-            Vector dir = e.getLocation().toVector().subtract(center.toVector());
-            if (dir.lengthSquared() == 0) dir = new Vector(0, 1, 0);
-            dir.normalize().multiply(knockback);
-            dir.setY(Math.max(0.4, dir.getY() + 0.3));
+    w.playSound(center, Sound.ENTITY_GENERIC_EXPLODE, 2f, 0.6f);
 
-            e.setVelocity(dir);
+    for (Entity e : w.getNearbyEntities(center, radius, radius, radius)) {
+        if (!(e instanceof LivingEntity living)) continue;
+        if (e instanceof ArmorStand) continue;
 
-            if (damage > 0) living.damage(damage);
+        Vector dir = e.getLocation().toVector().subtract(center.toVector());
+        if (dir.lengthSquared() == 0) dir = new Vector(0, 1, 0);
+        dir.normalize().multiply(knockback);
+        dir.setY(Math.max(0.4, dir.getY() + 0.3));
 
-            if (slow) {
-                // ➜ SLOW → SLOWNESS (новое имя эффекта)
-                living.addPotionEffect(new PotionEffect(
-                        PotionEffectType.SLOWNESS,
-                        slowDuration,
-                        slowAmplifier,
-                        false,
-                        true
-                ));
-            }
+        e.setVelocity(dir);
+
+        if (damage > 0) living.damage(damage);
+
+        if (slow) {
+            living.addPotionEffect(new PotionEffect(
+                    PotionEffectType.SLOWNESS,
+                    slowDuration,
+                    slowAmplifier,
+                    false,
+                    true
+            ));
         }
     }
+}
+
 
     // 📡 радар метеоритів
     public void runRadar(Location impact) {
