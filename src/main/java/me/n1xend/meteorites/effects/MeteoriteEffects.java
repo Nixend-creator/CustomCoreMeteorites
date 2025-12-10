@@ -79,7 +79,8 @@ public class MeteoriteEffects {
         int slowDuration = sec.getInt("slow-duration", 60);
         int slowAmplifier = sec.getInt("slow-amplifier", 0);
 
-        w.spawnParticle(Particle.EXPLOSION_HUGE, center, 1);
+        // ➜ EXPLOSION_HUGE заменили на доступный в новых версиях Bukkit
+        w.spawnParticle(Particle.EXPLOSION_LARGE, center, 1);
         w.spawnParticle(Particle.CLOUD, center, 60, radius / 2, 1, radius / 2, 0.02);
         w.playSound(center, Sound.ENTITY_GENERIC_EXPLODE, 2f, 0.6f);
 
@@ -97,8 +98,9 @@ public class MeteoriteEffects {
             if (damage > 0) living.damage(damage);
 
             if (slow) {
+                // ➜ SLOW → SLOWNESS (новое имя эффекта)
                 living.addPotionEffect(new PotionEffect(
-                        PotionEffectType.SLOW,
+                        PotionEffectType.SLOWNESS,
                         slowDuration,
                         slowAmplifier,
                         false,
