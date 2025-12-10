@@ -27,20 +27,11 @@ public class MeteoriteEffects {
         ConfigurationSection sec = config.getAtmosphereSettings();
         if (sec == null || !sec.getBoolean("enabled", true)) return;
 
-        Particle particle;
-        try {
-            particle = Particle.valueOf(sec.getString("particle", "FLAME").toUpperCase());
-        } catch (Exception e) {
-            particle = Particle.FLAME;
-        }
+        final Particle particle = getSafeParticle(sec.getString("particle", "FLAME"));
+        final Sound sound = getSafeSound(sec.getString("sound", "ENTITY_BLAZE_SHOOT"));
 
-        Sound sound = null;
-        try {
-            sound = Sound.valueOf(sec.getString("sound", "ENTITY_BLAZE_SHOOT").toUpperCase());
-        } catch (Exception ignored) {}
-
-        int interval = sec.getInt("interval-ticks", 3);
-        double minY = sec.getDouble("min-y", 90);
+        final int interval = sec.getInt("interval-ticks", 3);
+        final double minY = sec.getDouble("min-y", 90);
 
         new BukkitRunnable() {
             @Override
@@ -55,6 +46,7 @@ public class MeteoriteEffects {
                     if (w == null) continue;
 
                     w.spawnParticle(particle, loc, 6, 0.3, 0.3, 0.3, 0.01);
+
                     if (sound != null) {
                         w.playSound(loc, sound, 0.5f, 1.3f);
                     }
@@ -79,9 +71,10 @@ public class MeteoriteEffects {
         int slowDuration = sec.getInt("slow-duration", 60);
         int slowAmplifier = sec.getInt("slow-amplifier", 0);
 
-        // ❌ Убрали версионно-зависимую частицу EXPLOSION_*
-        // Эффект взрыва: дым + звук
-        w.spawnParticle(Particle.CLOUD, center, 60, radius / 2, 1, radius / 2, 0.02);
+        // ✔ універсальний вибух — працює на всіх версіях
+        w.spawnParticle(Particle.CLOUD, center, 60,
+                radius / 2, 1, radius / 2, 0.02);
+
         w.playSound(center, Sound.ENTITY_GENERIC_EXPLODE, 2f, 0.6f);
 
         for (Entity e : w.getNearbyEntities(center, radius, radius, radius)) {
@@ -98,7 +91,6 @@ public class MeteoriteEffects {
             if (damage > 0) living.damage(damage);
 
             if (slow) {
-                // Используем новое имя эффекта: SLOWNESS
                 living.addPotionEffect(new PotionEffect(
                         PotionEffectType.SLOWNESS,
                         slowDuration,
@@ -161,9 +153,28 @@ public class MeteoriteEffects {
     public void playLootAnimation(Location loc) {
         World w = loc.getWorld();
         if (w == null) return;
+
         w.spawnParticle(Particle.END_ROD, loc.clone().add(0.5, 1, 0.5),
                 40, 0.3, 0.5, 0.3, 0.01);
+
         w.playSound(loc, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 1f);
         w.playSound(loc, Sound.BLOCK_AMETHYST_BLOCK_RESONATE, 1f, 1.3f);
+    }
+
+    // 🔧 безпечні методи для Particle/Sound
+    private Particle getSafeParticle(String name) {
+        try {
+            return Particle.valueOf(name.toUpperCase());
+        } catch (Exception e) {
+            return Particle.FLAME;
+        }
+    }
+
+    private Sound getSafeSound(String name) {
+        try {
+            return Sound.valueOf(name.toUpperCase());
+        } catch (Exception e) {
+            return null;
+        }
     }
 }
