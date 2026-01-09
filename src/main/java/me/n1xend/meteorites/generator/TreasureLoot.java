@@ -45,7 +45,31 @@ public class TreasureLoot {
         Material mat = Material.matchMaterial(materialName.toUpperCase());
         if (mat == null) return null;
 
-        int amount = Math.max(1, Math.min(entry.getInt("amount", 1), mat.getMaxStackSize()));
+        // Поддержка диапазона количества, например: "4-12"
+        int amount = 1;
+        String amountStr = entry.getString("amount", "1");
+        if (amountStr.contains("-")) {
+            String[] parts = amountStr.split("-", 2);
+            try {
+                int min = Integer.parseInt(parts[0].trim());
+                int max = Integer.parseInt(parts[1].trim());
+                if (min <= max) {
+                    amount = min + RANDOM.nextInt(max - min + 1);
+                } else {
+                    amount = min;
+                }
+            } catch (NumberFormatException ignored) {
+                amount = 1;
+            }
+        } else {
+            try {
+                amount = Integer.parseInt(amountStr.trim());
+            } catch (NumberFormatException ignored) {
+                amount = 1;
+            }
+        }
+        amount = Math.max(1, Math.min(amount, mat.getMaxStackSize()));
+
         ItemStack item = new ItemStack(mat, amount);
         ItemMeta meta = item.getItemMeta();
         if (meta == null) return item;
@@ -73,6 +97,7 @@ public class TreasureLoot {
             meta.addItemFlags(ItemFlag.HIDE_UNBREAKABLE);
         }
 
+        // 🔧 ЗАЧАРОВАНИЯ — БЕЗ СКРЫТИЯ!
         ConfigurationSection enchants = entry.getConfigurationSection("enchants");
         if (enchants != null) {
             for (String enchantKey : enchants.getKeys(false)) {
@@ -82,9 +107,8 @@ public class TreasureLoot {
                 if (level <= 0) continue;
                 meta.addEnchant(ench, level, true);
             }
-            if (!enchants.getKeys(false).isEmpty()) {
-                meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
-            }
+            // ❌ УДАЛЕНО: meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+            // Теперь зачарования видны, как после ванильного стола зачарования.
         }
 
         if (meta instanceof LeatherArmorMeta leatherMeta) {
