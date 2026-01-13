@@ -1,9 +1,8 @@
 # ☄️ CustomMeteorites — Next-Gen Minecraft Meteorite System  
 **A powerful, customizable, cinematic meteorite event plugin for Spigot/Paper 1.16–1.21.**
 
-![Version](https://img.shields.io/badge/version-1.0.0-blue)
+![Version](https://img.shields.io/badge/version-1.0.1-blue)
 ![Minecraft](https://img.shields.io/badge/Minecraft-1.16--1.21-green)
-![License](https://img.shields.io/badge/License-MIT-yellow)
 ![Build](https://img.shields.io/badge/Build-Maven-red)
 ![Platform](https://img.shields.io/badge/Platform-Paper%2FSpigot-purple)
 
@@ -119,7 +118,3 @@ Discord: *будет добавлен*
 YouTube: *будет добавлен*
 
 ---
-
-## 📜 License
-MIT License — свободно используйте и модифицируйте.
-
